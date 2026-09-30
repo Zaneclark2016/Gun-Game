@@ -1,0 +1,9 @@
+{
+  "name": "Zombie Survival",
+  "short_name": "Zombies",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "orientation": "landscape"
+}
