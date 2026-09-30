@@ -13,12 +13,14 @@
 html,body{margin:0;height:100%;background:#A9ACB1;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#fff}
 *{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
 canvas{position:fixed;inset:0;width:100%;height:100%;image-rendering:pixelated}
-#hud{position:fixed;left:0;right:0;top:max(10px,env(safe-area-inset-top));display:flex;justify-content:space-between;padding:0 max(18px,env(safe-area-inset-left));font-weight:800;font-size:20px;pointer-events:none;text-shadow:0 1px 4px #000}
+#hud{position:fixed;left:0;right:0;top:max(10px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:center;padding:0 max(18px,env(safe-area-inset-left));font-weight:800;font-size:20px;pointer-events:none;text-shadow:0 1px 4px #000}
 #fire{position:fixed;right:max(28px,env(safe-area-inset-right));bottom:max(34px,env(safe-area-inset-bottom));width:100px;height:100px;border-radius:50%;background:rgba(255,80,80,.4);border:3px solid rgba(0,0,0,.45);display:grid;place-items:center;font-weight:800;letter-spacing:1px}
 #fire:active{background:rgba(255,80,80,.7)}
 #ring{position:fixed;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;border:3px solid rgba(0,0,0,.3);display:none;pointer-events:none}
 #knob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(0,0,0,.3)}
 @media (pointer:fine){#fire{display:none}}
+#hpbar{width:180px;height:18px;border:2px solid rgba(0,0,0,.6);border-radius:10px;background:rgba(0,0,0,.4);overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+#hpfill{height:100%;width:100%;background:#4cd964;transition:width .15s,background .15s}
 #banner{position:fixed;top:28%;left:0;right:0;text-align:center;font-size:44px;font-weight:800;pointer-events:none;opacity:0;transition:opacity .4s;text-shadow:0 2px 8px #000}#banner.on{opacity:1}
 #msg{position:fixed;inset:0;display:grid;place-items:center;text-align:center;background:rgba(169,172,177,.88);color:#111;font-size:20px;line-height:1.6;padding:24px}
 #msg.hidden{display:none}#msg h1{margin:0 0 10px;font-size:38px}
@@ -26,7 +28,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;image-rendering:pixelated}
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><span id="hp">HP 100</span><span id="wave">Wave 1</span><span id="kills">Zombies 0</span></div>
+<div id="hud"><span id="wave">Wave 1</span><span id="kills">Zombies 0</span><div id="hpbar"><div id="hpfill"></div></div></div>
 <div id="banner"></div>
 <div id="ring"><div id="knob"></div></div>
 <div id="fire">FIRE</div>
@@ -36,7 +38,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;image-rendering:pixelated}
 const S=40;
 const MAP=Array.from({length:S},(_,y)=>Array.from({length:S},(_,x)=>x===0||y===0||x===S-1||y===S-1?'#':'.').join(''));
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-const hpEl=document.getElementById('hp'),killsEl=document.getElementById('kills'),waveEl=document.getElementById('wave'),bannerEl=document.getElementById('banner');
+const hpEl=document.getElementById('hpfill'),killsEl=document.getElementById('kills'),waveEl=document.getElementById('wave'),bannerEl=document.getElementById('banner');
 const msg=document.getElementById('msg'),msgBox=document.getElementById('msgBox');
 const ring=document.getElementById('ring'),knob=document.getElementById('knob');
 let W,H=200,zb,sky,flo;
@@ -123,7 +125,7 @@ function update(dt){
   if(alive===0&&breakT<=0&&hp>0){breakT=3;hp=Math.min(100,hp+25);banner('Wave '+wave+' cleared');}
   if(breakT>0){breakT-=dt;if(breakT<=0)startWave();}
   if(hp<=0&&state==='play'){hp=0;state='dead';mouseFire=false;document.exitPointerLock?.();showMsg(`<h1>You died</h1>Reached wave ${wave}<br>Zombies killed: ${kills}<br>Tap to retry`);}
-  hpEl.textContent='HP '+hp;
+  hpEl.style.width=hp+'%';hpEl.style.background=hp>50?'#4cd964':hp>25?'#ffb020':'#ff3b30';
   waveEl.textContent='Wave '+wave;
   killsEl.textContent='Zombies '+alive;
 }
