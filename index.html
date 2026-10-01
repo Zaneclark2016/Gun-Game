@@ -43,7 +43,7 @@ const msg=document.getElementById('msg'),msgBox=document.getElementById('msgBox'
 const ring=document.getElementById('ring'),knob=document.getElementById('knob');
 let W,H=200,zb,sky,flo;
 let px,py,pa,hp,kills,enemies,cool,flash,hurt,walk,wave,toSpawn,spawnT,breakT,state='menu',lock=0,firing=false,fireId=null,lookDX=0;
-let mouseFire=false;
+let mouseFire=false,pops=[];
 const keys={},touches=new Map();
 const mix=(r,g,b,f)=>`rgb(${r*(1-f)+205*f|0},${g*(1-f)+225*f|0},${b*(1-f)+245*f|0})`;
 const clamp=(v,m=1)=>Math.max(-m,Math.min(m,v));
@@ -58,7 +58,7 @@ addEventListener('resize',resize);resize();
 
 function showMsg(html){msgBox.innerHTML=html;msg.classList.remove('hidden');lock=performance.now()+600;}
 function newGame(){
-  px=py=S/2;pa=0;hp=100;kills=0;cool=0;flash=0;hurt=0;walk=0;enemies=[];wave=0;breakT=0;
+  px=py=S/2;pa=0;hp=100;kills=0;cool=0;flash=0;hurt=0;walk=0;enemies=[];pops=[];wave=0;breakT=0;
   state='play';msg.classList.add('hidden');startWave();
 }
 function banner(t){bannerEl.textContent=t;bannerEl.classList.add('on');setTimeout(()=>bannerEl.classList.remove('on'),2000);}
@@ -67,7 +67,7 @@ function spawnZombie(){
   for(let i=0;i<30;i++){
     const x=1.5+Math.random()*(S-3),y=1.5+Math.random()*(S-3);
     if(Math.hypot(x-px,y-py)>12){
-      enemies.push({x,y,hp:2+(wave/3|0),cd:0,hit:0,sp:Math.min(2.6,1.1+wave*.08)*(.85+Math.random()*.3)});
+      enemies.push({x,y,hp:40+20*(wave/3|0),cd:0,hit:0,sp:Math.min(2.6,1.1+wave*.08)*(.85+Math.random()*.3)});
       return true;
     }
   }
@@ -92,7 +92,7 @@ function shoot(){
     if(Math.abs(da)<Math.atan(.28/d)&&d<bd&&los(px,py,e.x,e.y)){best=e;bd=d;}
   }
   if(best){
-    best.hit=.15;best.hp--;
+    best.hit=.15;best.hp-=20;pops.push({x:best.x,y:best.y,t:0,ox:(Math.random()<.5?-1:1)*(.35+Math.random()*.3),txt:'20'});
     if(best.hp<=0)kills++;
   }
 }
@@ -121,6 +121,8 @@ function update(dt){
     if(d<.9&&e.cd<=0){e.cd=.9;hp-=10;hurt=.25;}
   }
   enemies=enemies.filter(e=>e.hp>0);
+  for(const p of pops)p.t+=dt;
+  pops=pops.filter(p=>p.t<.8);
   const alive=enemies.length+toSpawn;
   if(alive===0&&breakT<=0&&hp>0){breakT=3;hp=Math.min(100,hp+25);banner('Wave '+wave+' cleared');}
   if(breakT>0){breakT-=dt;if(breakT<=0)startWave();}
@@ -161,6 +163,19 @@ function render(){
       if(Math.abs(hu)<1){const hh=Math.sqrt(1-hu*hu)*sh*.15;ctx.fillStyle=head;ctx.fillRect(c,top+sh*.2-hh,1,hh*2);}
     }
   }
+  for(const p of pops){
+    const ex=p.x-px,ey=p.y-py;
+    const tx=inv*(dirY*ex-dirX*ey),ty=inv*(-plY*ex+plX*ey);
+    if(ty<.15)continue;
+    const sh=H/ty,cx=W/2*(1+tx/ty)+p.ox*sh*.5,c=Math.round(cx);
+    if(c<0||c>=W||zb[c]<ty)continue;
+    const cy=(H+sh)/2-sh*(.75+p.t*.7);
+    ctx.globalAlpha=Math.max(0,Math.min(1,(.8-p.t)*3));
+    ctx.font=`bold ${Math.max(8,Math.min(24,sh*.22))|0}px sans-serif`;
+    ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#000';
+    ctx.strokeText(p.txt,cx,cy);ctx.fillStyle='#ffd84a';ctx.fillText(p.txt,cx,cy);
+  }
+  ctx.globalAlpha=1;
   const bob=Math.sin(walk*9)*2;
   ctx.fillStyle='#2b2e37';ctx.fillRect(W/2-6,H-48+bob,12,48);
   ctx.fillStyle='#484d5a';ctx.fillRect(W/2-10,H-24+bob,20,24);
