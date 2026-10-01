@@ -47,7 +47,7 @@ let mouseFire=false,pops=[];
 const keys={},touches=new Map();
 const mix=(r,g,b,f)=>`rgb(${r*(1-f)+205*f|0},${g*(1-f)+225*f|0},${b*(1-f)+245*f|0})`;
 const clamp=(v,m=1)=>Math.max(-m,Math.min(m,v));
-const DMG=6;
+const DMG=3;
 const wall=(x,y)=>MAP[y|0]?.[x|0]!=='.';
 
 function resize(){
