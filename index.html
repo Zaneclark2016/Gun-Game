@@ -47,7 +47,7 @@ let mouseFire=false,pops=[];
 const keys={},touches=new Map();
 const mix=(r,g,b,f)=>`rgb(${r*(1-f)+205*f|0},${g*(1-f)+225*f|0},${b*(1-f)+245*f|0})`;
 const clamp=(v,m=1)=>Math.max(-m,Math.min(m,v));
-const DMG=3;
+const dmgAt=d=>Math.max(1,Math.round(5-4*Math.max(0,d-4)/16));
 const wall=(x,y)=>MAP[y|0]?.[x|0]!=='.';
 
 function resize(){
@@ -94,7 +94,7 @@ function shoot(){
     if(Math.abs(da)<Math.atan(.28/d)&&d<bd&&los(px,py,e.x,e.y)){best=e;bd=d;}
   }
   if(best){
-    best.hit=.15;best.hp-=DMG;pops.push({x:best.x,y:best.y,t:0,ox:(Math.random()<.5?-1:1)*(.35+Math.random()*.3),txt:String(DMG)});
+    best.hit=.15;const dmg=dmgAt(bd);best.hp-=dmg;pops.push({x:best.x,y:best.y,t:0,ox:(Math.random()<.5?-1:1)*(.35+Math.random()*.3),txt:String(dmg)});
     if(best.hp<=0)kills++;
   }
 }
